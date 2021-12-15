@@ -531,3 +531,31 @@ resource "aws_iam_role_policy_attachment" "workers_additional_policies" {
   role       = aws_iam_role.workers[0].name
   policy_arn = var.workers_additional_policies[count.index]
 }
+
+# s3 bucket access
+
+resource "aws_iam_policy" "s3_bucket_access" {
+  name        = "complete-tf-eks-s3a"
+  description = "IAM policy for s3 bucket access"
+  policy      = data.aws_iam_policy_document.s3_bucket_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "s3_bucket_access" {
+  policy_arn = aws_iam_policy.s3_bucket_access.arn
+  role       = aws_iam_role.workers[0].name
+}
+
+data "aws_iam_policy_document" "s3_bucket_access" {
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    resources = [
+        "arn:aws:s3:::batch-artifact-repository-401305384268",
+        "arn:aws:s3:::batch-artifact-repository-401305384268/*",
+        "arn:aws:s3:::singlem-results-us-east-2",
+        "arn:aws:s3:::singlem-results-us-east-2/*"
+        ]
+    actions = ["s3:*"]
+  }
+}
+
