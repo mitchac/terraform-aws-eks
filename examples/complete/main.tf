@@ -34,32 +34,47 @@ module "eks" {
   }
 
   node_groups = {
-    example = {
+    primary = {
       desired_capacity = 1
-      max_capacity     = 10
+      max_capacity     = 2
       min_capacity     = 1
-
-      instance_types = ["t3.large"]
-      capacity_type  = "SPOT"
+      
+      instance_types = ["c5.large"]
       subnets = module.vpc.public_subnets
+      disk_size = 100
       k8s_labels = {
         Environment = "test"
         GithubRepo  = "terraform-aws-eks"
         GithubOrg   = "terraform-aws-modules"
       }
       additional_tags = {
-        ExtraTag = "example"
+        ExtraTag = "primary"
       }
-#      taints = [
-#        {
-#          key    = "dedicated"
-#          value  = "gpuGroup"
-#          effect = "NO_SCHEDULE"
-#        }
-#      ]
-      update_config = {
-        max_unavailable_percentage = 50 # or set `max_unavailable`
+    },
+    workflow_jobs = {
+      desired_capacity = 1
+      max_capacity     = 6
+      min_capacity     = 1
+
+      instance_types = ["c5.4xlarge"]
+      capacity_type  = "SPOT"
+      subnets = module.vpc.public_subnets
+      k8s_labels = {
+        purpose = "workflow-jobs"
+        Environment = "test"
+        GithubRepo  = "terraform-aws-eks"
+        GithubOrg   = "terraform-aws-modules"
       }
+      additional_tags = {
+        ExtraTag = "workflow-jobs"
+      }
+      taints = [
+        {
+          key    = "reserved-pool"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      ]
     }
   }
 
